@@ -1,0 +1,567 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bouquet Online</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #fff0f5;
+    color: #333;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* HALAMAN LOGIN */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.login-box {
+    background: white;
+    width: 350px;
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 20px #d9a6b7;
+}
+
+.login-box h1 {
+    color: #d63384;
+    margin-bottom: 15px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+}
+
+button {
+    background: #d63384;
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+    margin: 5px 0;
+}
+
+button:hover {
+    background: #ad2165;
+}
+
+.demo-account {
+    background: #fff0f5;
+    padding: 12px;
+    margin-top: 20px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* HEADER */
+header {
+    background: #d63384;
+    color: white;
+    padding: 18px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header button {
+    background: white;
+    color: #d63384;
+}
+
+/* KONTEN */
+.container {
+    padding: 30px;
+}
+
+.container h1,
+.container h2 {
+    margin: 20px 0 15px;
+}
+
+.product-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.product-card,
+.order-card,
+.admin-product {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 10px 0;
+    box-shadow: 0 3px 10px #e7c2d0;
+}
+
+.product-card h3 {
+    color: #d63384;
+    margin-bottom: 10px;
+}
+
+.admin-form {
+    max-width: 400px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.status {
+    color: #d63384;
+    font-weight: bold;
+}
+
+select {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    margin-top: 8px;
+}
+
+@media(max-width: 600px) {
+    header {
+        padding: 15px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- HALAMAN LOGIN -->
+<section id="loginPage" class="login-container">
+    <div class="login-box">
+        <h1>🌷 Bouquet Online</h1>
+        <p>Silakan login untuk melanjutkan</p>
+
+        <form id="loginForm">
+            <input type="email" id="email"
+                placeholder="Masukkan email" required>
+
+            <input type="password" id="password"
+                placeholder="Masukkan password" required>
+
+            <button type="submit">Login</button>
+        </form>
+
+        <p id="loginMessage"></p>
+
+        <div class="demo-account">
+            <b>AKUN DEMO</b>
+            <p>Admin: admin@gmail.com</p>
+            <p>Password: admin123</p>
+            <hr>
+            <p>Pelanggan: user@gmail.com</p>
+            <p>Password: user123</p>
+        </div>
+    </div>
+</section>
+
+
+<!-- HALAMAN PELANGGAN -->
+<section id="customerPage" class="hidden">
+
+    <header>
+        <h2>🌷 Bouquet Online</h2>
+        <button onclick="logout()">Logout</button>
+    </header>
+
+    <main class="container">
+        <h1>Selamat Datang, Pelanggan!</h1>
+        <p>Pilih bouquet favoritmu.</p>
+
+        <h2>Katalog Bouquet</h2>
+        <div id="productList" class="product-list"></div>
+
+        <h2>Pesanan Saya</h2>
+        <div id="customerOrders"></div>
+    </main>
+
+</section>
+
+
+<!-- HALAMAN ADMIN -->
+<section id="adminPage" class="hidden">
+
+    <header>
+        <h2>🌷 Dashboard Admin</h2>
+        <button onclick="logout()">Logout</button>
+    </header>
+
+    <main class="container">
+
+        <h1>Selamat Datang, Admin!</h1>
+        <p>Kelola produk dan pesanan pelanggan.</p>
+
+        <h2>Tambah Produk Bouquet</h2>
+
+        <form id="productForm" class="admin-form">
+
+            <input type="text" id="productName"
+                placeholder="Nama bouquet" required>
+
+            <input type="number" id="productPrice"
+                placeholder="Harga bouquet" min="1" required>
+
+            <button type="submit">Tambah Produk</button>
+
+        </form>
+
+        <h2>Daftar Produk</h2>
+        <div id="adminProducts"></div>
+
+        <h2>Daftar Pesanan Pelanggan</h2>
+        <div id="adminOrders"></div>
+
+    </main>
+
+</section>
+
+
+<script>
+
+// DATA AKUN
+const accounts = [
+    {
+        email: "admin@gmail.com",
+        password: "admin123",
+        role: "admin"
+    },
+    {
+        email: "user@gmail.com",
+        password: "user123",
+        role: "pelanggan"
+    }
+];
+
+
+// DATA PRODUK
+let products = JSON.parse(localStorage.getItem("products")) || [
+    { id: 1, name: "Bouquet Mawar", price: 75000 },
+    { id: 2, name: "Bouquet Wisuda", price: 100000 },
+    { id: 3, name: "Bouquet Snack", price: 85000 }
+];
+
+
+// DATA PESANAN
+let orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+let currentUser = null;
+
+
+// SIMPAN DATA
+function saveData() {
+    localStorage.setItem("products", JSON.stringify(products));
+    localStorage.setItem("orders", JSON.stringify(orders));
+}
+
+
+// PROSES LOGIN
+document.getElementById("loginForm")
+.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const account = accounts.find(user =>
+        user.email === email &&
+        user.password === password
+    );
+
+    if (!account) {
+        document.getElementById("loginMessage").innerText =
+            "Email atau password salah!";
+        return;
+    }
+
+    currentUser = account;
+
+    document.getElementById("loginPage").classList.add("hidden");
+
+    // MEMBEDAKAN ROLE
+    if (account.role === "admin") {
+
+        document.getElementById("adminPage")
+        .classList.remove("hidden");
+
+        renderAdmin();
+
+    } else {
+
+        document.getElementById("customerPage")
+        .classList.remove("hidden");
+
+        renderProducts();
+        renderCustomerOrders();
+
+    }
+
+});
+
+
+// MENAMPILKAN PRODUK
+function renderProducts() {
+
+    const container = document.getElementById("productList");
+
+    container.innerHTML = products.map(product => `
+        <div class="product-card">
+            <h3>${product.name}</h3>
+            <p>Rp ${product.price.toLocaleString("id-ID")}</p>
+
+            <button onclick="orderProduct(${product.id})">
+                Pesan Sekarang
+            </button>
+        </div>
+    `).join("");
+
+}
+
+
+// PELANGGAN MEMESAN PRODUK
+function orderProduct(id) {
+
+    if (!currentUser || currentUser.role !== "pelanggan") return;
+
+    const product = products.find(item => item.id === id);
+
+    if (!product) return;
+
+    const newOrder = {
+        id: Date.now(),
+        customer: currentUser.email,
+        product: product.name,
+        price: product.price,
+        status: "Menunggu Konfirmasi"
+    };
+
+    orders.push(newOrder);
+
+    saveData();
+
+    alert("Pesanan berhasil dibuat!");
+
+    renderCustomerOrders();
+
+}
+
+
+// MENAMPILKAN PESANAN PELANGGAN
+function renderCustomerOrders() {
+
+    const container = document.getElementById("customerOrders");
+
+    const myOrders = orders.filter(order =>
+        order.customer === currentUser.email
+    );
+
+    if (myOrders.length === 0) {
+        container.innerHTML = "<p>Belum ada pesanan.</p>";
+        return;
+    }
+
+    container.innerHTML = myOrders.map(order => `
+        <div class="order-card">
+            <h3>${order.product}</h3>
+            <p>Harga: Rp ${order.price.toLocaleString("id-ID")}</p>
+            <p>Status:
+                <span class="status">${order.status}</span>
+            </p>
+        </div>
+    `).join("");
+
+}
+
+
+// ADMIN MENAMBAH PRODUK
+document.getElementById("productForm")
+.addEventListener("submit", function(e) {
+
+    e.preventDefault();
+
+    if (!currentUser || currentUser.role !== "admin") return;
+
+    const name = document.getElementById("productName").value;
+    const price = Number(document.getElementById("productPrice").value);
+
+    products.push({
+        id: Date.now(),
+        name: name,
+        price: price
+    });
+
+    saveData();
+
+    this.reset();
+
+    renderAdmin();
+
+    alert("Produk berhasil ditambahkan!");
+
+});
+
+
+// MENAMPILKAN DATA ADMIN
+function renderAdmin() {
+
+    const productContainer =
+        document.getElementById("adminProducts");
+
+    const orderContainer =
+        document.getElementById("adminOrders");
+
+
+    // DATA PRODUK
+    productContainer.innerHTML = products.map(product => `
+        <div class="admin-product">
+            <b>${product.name}</b>
+
+            <p>Rp ${product.price.toLocaleString("id-ID")}</p>
+
+            <button onclick="deleteProduct(${product.id})">
+                Hapus Produk
+            </button>
+        </div>
+    `).join("");
+
+
+    // DATA PESANAN
+    if (orders.length === 0) {
+
+        orderContainer.innerHTML =
+            "<p>Belum ada pesanan pelanggan.</p>";
+
+    } else {
+
+        orderContainer.innerHTML = orders.map(order => `
+            <div class="order-card">
+
+                <h3>${order.product}</h3>
+
+                <p>Pelanggan: ${order.customer}</p>
+
+                <p>Harga: Rp ${order.price.toLocaleString("id-ID")}</p>
+
+                <p>Status: ${order.status}</p>
+
+                <select onchange="updateStatus(${order.id}, this.value)">
+
+                    <option value="Menunggu Konfirmasi"
+                        ${order.status === "Menunggu Konfirmasi" ? "selected" : ""}>
+                        Menunggu Konfirmasi
+                    </option>
+
+                    <option value="Diproses"
+                        ${order.status === "Diproses" ? "selected" : ""}>
+                        Diproses
+                    </option>
+
+                    <option value="Selesai"
+                        ${order.status === "Selesai" ? "selected" : ""}>
+                        Selesai
+                    </option>
+
+                </select>
+
+            </div>
+        `).join("");
+
+    }
+
+}
+
+
+// ADMIN MENGHAPUS PRODUK
+function deleteProduct(id) {
+
+    if (!currentUser || currentUser.role !== "admin") return;
+
+    if (confirm("Yakin ingin menghapus produk ini?")) {
+
+        products = products.filter(product =>
+            product.id !== id
+        );
+
+        saveData();
+
+        renderAdmin();
+
+    }
+
+}
+
+
+// ADMIN MENGUBAH STATUS PESANAN
+function updateStatus(id, status) {
+
+    if (!currentUser || currentUser.role !== "admin") return;
+
+    const order = orders.find(item => item.id === id);
+
+    if (order) {
+
+        order.status = status;
+
+        saveData();
+
+        renderAdmin();
+
+    }
+
+}
+
+
+// LOGOUT
+function logout() {
+
+    currentUser = null;
+
+    document.getElementById("adminPage")
+    .classList.add("hidden");
+
+    document.getElementById("customerPage")
+    .classList.add("hidden");
+
+    document.getElementById("loginPage")
+    .classList.remove("hidden");
+
+    document.getElementById("loginForm").reset();
+
+    document.getElementById("loginMessage").innerText = "";
+
+}
+
+</script>
+
+</body>
+</html>
